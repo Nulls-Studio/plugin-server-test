@@ -49,7 +49,7 @@ jobs:
           echo "This is not a Minecraft plugin." > test-plugin/plugin.txt
 
       - name: Test ${{ matrix.software }} ${{ matrix.version }}
-        uses: noone-075/plugin-server-test@main
+        uses: Nulls-Studio/plugin-server-test@main
         with:
           software: ${{ matrix.software }}
           version: ${{ matrix.version }}

@@ -1,0 +1,60 @@
+name: Action Test
+
+on:
+  push:
+    paths:
+    - "action.yml"
+    - "test.sh"
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - software: paper
+            version: '1.21.11'
+            java: '25'
+          - software: folia
+            version: '1.21.11'
+            java: '25'
+          - software: bukkit
+            version: '1.21.11'
+            java: '25'
+
+          - software: paper
+            version: '1.8.8'
+            java: '8'
+          - software: bukkit
+            version: '1.8.8'
+            java: '8'
+
+          - software: paper
+            version: '1.12.2'
+            java: '8'
+          - software: bukkit
+            version: '1.12.2'
+            java: '8'
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Create test plugin placeholder
+        run: |
+          mkdir -p test-plugin
+          echo "This is not a Minecraft plugin." > test-plugin/plugin.txt
+
+      - name: Test ${{ matrix.software }} ${{ matrix.version }}
+        uses: noone-075/plugin-server-test@main
+        with:
+          software: ${{ matrix.software }}
+          version: ${{ matrix.version }}
+          java: ${{ matrix.java }}
+          plugins: |
+            test-plugin/plugin.txt
+          tocheck: |
+            Done (

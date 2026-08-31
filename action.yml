@@ -1,0 +1,132 @@
+name: Minecraft Server Plugin Test
+
+description: >
+  Starts a Minecraft server using Paper, Folia, or CraftBukkit,
+  installs a plugin and dependencies, executes console commands,
+  and verifies the resulting server logs.
+
+author: noone-075 
+
+inputs:
+  software:
+    description: >
+      Server software to test. Supported values: paper, folia, bukkit.
+    required: true
+
+  version:
+    description: >
+      Minecraft version to test, for example 1.21.11.
+    required: true
+
+  java:
+    description: >
+      Java version to use. Supported values: 8, 11, 17, 21, 25.
+    required: true
+
+  plugins:
+    description: >
+      Newline-separated glob patterns for JAR files to install into /plugins.
+      Patterns are evaluated relative to the GitHub workspace.
+    required: true
+
+  commands:
+    description: >
+      Newline-separated commands to execute through the Minecraft server console.
+    required: false
+    default: ""
+
+  tocheck:
+    description: >
+      Newline-separated log patterns to check after all commands have executed.
+      A pattern containing '*' is treated as a wildcard pattern.
+    required: false
+    default: ""
+
+  checkscript:
+    description: >
+      Optional command to run after the server test.
+      server.log is passed to stdin.
+      Exit code 0 means success and exit code 1 means failure.
+    required: false
+    default: ""
+
+  timeout:
+    description: >
+      Maximum number of seconds to wait for server startup.
+    required: false
+    default: "60"
+
+  command-delay:
+    description: >
+      Number of seconds to wait after sending each console command.
+    required: false
+    default: "2"
+
+outputs:
+  server-log:
+    description: Path to the generated server log.
+    value: /server/server.log
+
+  result:
+    description: Result of the plugin test.
+    value: ${{ steps.test.outputs.result }}
+
+runs:
+  using: composite
+
+  steps:
+    - name: Validate runner
+      shell: bash
+      run: |
+        set -euo pipefail
+
+        if [[ "${RUNNER_OS}" != "Linux" ]]; then
+          echo "::error::Minecraft Server Test currently requires a Linux runner."
+          exit 1
+        fi
+
+    - name: Install Java 8
+      uses: actions/setup-java@v6
+      with:
+        distribution: temurin
+        java-version: "8"
+
+    - name: Install Java 11
+      uses: actions/setup-java@v6
+      with:
+        distribution: temurin
+        java-version: "11"
+
+    - name: Install Java 17
+      uses: actions/setup-java@v6
+      with:
+        distribution: temurin
+        java-version: "17"
+
+    - name: Install Java 21
+      uses: actions/setup-java@v6
+      with:
+        distribution: temurin
+        java-version: "21"
+
+    - name: Install Java 25
+      uses: actions/setup-java@v6
+      with:
+        distribution: temurin
+        java-version: "25"
+
+    - name: Run Minecraft server test
+      id: test
+      shell: bash
+      env:
+        INPUT_SOFTWARE: ${{ inputs.software }}
+        INPUT_VERSION: ${{ inputs.version }}
+        INPUT_JAVA: ${{ inputs.java }}
+        INPUT_PLUGINS: ${{ inputs.plugins }}
+        INPUT_COMMANDS: ${{ inputs.commands }}
+        INPUT_TOCHECK: ${{ inputs.tocheck }}
+        INPUT_CHECKSCRIPT: ${{ inputs.checkscript }}
+        INPUT_TIMEOUT: ${{ inputs.timeout }}
+        INPUT_COMMAND_DELAY: ${{ inputs.command-delay }}
+      run: |
+        bash "$GITHUB_ACTION_PATH/test.sh"
